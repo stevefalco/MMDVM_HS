@@ -1126,7 +1126,6 @@ uint16_t CIO::devPOCSAG()
 
 void CIO::printConf()
 {
-	int i, j;
   DEBUG1("MMDVM_HS FW configuration:");
   DEBUG2I("TX freq (Hz):", TXfreq());
   DEBUG2I("RX freq (Hz):", RXfreq());
@@ -1137,12 +1136,49 @@ void CIO::printConf()
   DEBUG2("P25 +1 sym dev (Hz):", devP25());
   DEBUG2("NXDN +1 sym dev (Hz):", devNXDN());
   DEBUG2("POCSAG dev (Hz):", devPOCSAG());
-  DEBUG2("POCSAG dev (Hz):", devPOCSAG());
-  DEBUG2("testFMT:", 10);
+
+  char buf[128], *p;
+  volatile int i, j, k, l;
 
   for(i = 0; i < 2; i++) {
 	  for(j = 0; j < 16; j++) {
-		  DEBUG4("register:", i, j, debreg[i][j]);
+		  // Slow us down so we don't overrun the Pi buffer.
+		  for(k = 0; k < 10000; k++) {
+			  asm volatile("nop          \n\t"
+				       "nop          \n\t"
+				       "nop          \n\t"
+				      );
+		  }
+
+		  // Build a string showing a register's contents.
+		  p = buf;
+
+		  // Add in the unit (0 or 1).
+		  *p++ = '0' + i;
+		  *p++ = ' ';
+
+		  // Add in the register number (0 to 15) in hex.
+		  if(j < 10) {
+			  *p++ = '0' + j;
+			  *p++ = ' ';
+		  } else {
+			  *p++ = 'A' + j - 10;
+			  *p++ = ' ';
+		  }
+
+		  // Add in the register value in hex.
+		  for(l = 7; l >= 0; l--) {
+			  uint8_t t = (debreg[i][j] >> (l * 4)) & 0xf;
+			  if(t < 10) {
+				  *p++ = '0' + t;
+			  } else {
+				  *p++ = 'A' + t - 10;
+			  }
+		  }
+		  
+		  // Terminate the string and pass it to the pi.
+		  *p = 0;
+		  DEBUG1(buf);
 	  }
   }
 }
