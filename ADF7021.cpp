@@ -37,6 +37,8 @@ static uint32_t last_clk = 2U;
 
 volatile uint32_t  AD7021_control_word;
 
+uint32_t	debreg[2][16];
+
 uint32_t           ADF7021_RX_REG0;
 uint32_t           ADF7021_TX_REG0;
 uint32_t           ADF7021_REG1;
@@ -505,22 +507,27 @@ void CIO::ifConf(MMDVM_STATE modemState, bool reset)
 
   // VCO/OSCILLATOR (REG1)
   AD7021_control_word = ADF7021_REG1;
+  debreg[0][1] = AD7021_control_word;
   Send_AD7021_control();
 
   // TX/RX CLOCK (3)
   AD7021_control_word = ADF7021_REG3;
+  debreg[0][3] = AD7021_control_word;
   Send_AD7021_control();
 
   // DEMOD (4)
   AD7021_control_word = ADF7021_REG4;
+  debreg[0][4] = AD7021_control_word;
   Send_AD7021_control();
 
   // IF fine cal (6)
   AD7021_control_word = ADF7021_REG6;
+  debreg[0][6] = AD7021_control_word;
   Send_AD7021_control();
 
   // IF coarse cal (5)
   AD7021_control_word = ADF7021_REG5;
+  debreg[0][5] = AD7021_control_word;
   Send_AD7021_control();
 
   // Delay for filter calibration
@@ -534,6 +541,7 @@ void CIO::ifConf(MMDVM_STATE modemState, bool reset)
   ADF7021_REG2 |= (uint32_t) m_power       << 13;  // power level
   ADF7021_REG2 |= (uint32_t) 0b110001      << 7;   // PA
   AD7021_control_word = ADF7021_REG2;
+  debreg[0][2] = AD7021_control_word;
   Send_AD7021_control();
 
   // TEST DAC (14)
@@ -542,6 +550,7 @@ void CIO::ifConf(MMDVM_STATE modemState, bool reset)
 #else
   AD7021_control_word = 0x0000000E;
 #endif
+  debreg[0][14] = AD7021_control_word;
   Send_AD7021_control();
 
   // AGC (auto, defaults) (9)
@@ -554,22 +563,27 @@ void CIO::ifConf(MMDVM_STATE modemState, bool reset)
 #elif defined(AD7021_GAIN_HIGH)
   AD7021_control_word = 0x00A631E9; // AGC OFF, high gain
 #endif
+  debreg[0][9] = AD7021_control_word;
   Send_AD7021_control();
 
   // AFC (10)
   AD7021_control_word = ADF7021_REG10;
+  debreg[0][10] = AD7021_control_word;
   Send_AD7021_control();
 
   // SYNC WORD DET (11)
   AD7021_control_word = 0x0000003B;
+  debreg[0][11] = AD7021_control_word;
   Send_AD7021_control();
 
   // SWD/THRESHOLD (12)
   AD7021_control_word = 0x0000010C;
+  debreg[0][12] = AD7021_control_word;
   Send_AD7021_control();
 
   // 3FSK/4FSK DEMOD (13)
   AD7021_control_word = ADF7021_REG13;
+  debreg[0][13] = AD7021_control_word;
   Send_AD7021_control();
 
 #if defined(TEST_TX)
@@ -582,6 +596,7 @@ void CIO::ifConf(MMDVM_STATE modemState, bool reset)
   // TEST MODE (disabled) (15)
   AD7021_control_word = 0x000E000F;
 #endif
+  debreg[0][15] = AD7021_control_word;
   Send_AD7021_control();
 
   // Restore normal DV frequencies
@@ -727,22 +742,27 @@ void CIO::ifConf2(MMDVM_STATE modemState)
 
   // VCO/OSCILLATOR (1)
   AD7021_control_word = ADF7021_REG1;
+  debreg[1][1] = AD7021_control_word;
   Send_AD7021_control2();
 
   // TX/RX CLOCK (3)
   AD7021_control_word = ADF7021_REG3;
+  debreg[1][3] = AD7021_control_word;
   Send_AD7021_control2();
 
   // DEMOD (4)
   AD7021_control_word = ADF7021_REG4;
+  debreg[1][4] = AD7021_control_word;
   Send_AD7021_control2();
 
   // IF fine cal (6)
   AD7021_control_word = ADF7021_REG6;
+  debreg[1][6] = AD7021_control_word;
   Send_AD7021_control2();
 
   // IF coarse cal (5)
   AD7021_control_word = ADF7021_REG5;
+  debreg[1][5] = AD7021_control_word;
   Send_AD7021_control2();
 
   // Delay for coarse IF filter calibration
@@ -750,6 +770,7 @@ void CIO::ifConf2(MMDVM_STATE modemState)
 
   // Frequency RX (0) and set to RX only
   AD7021_control_word = ADF7021_RX_REG0;
+  debreg[1][5] = AD7021_control_word;
   Send_AD7021_control2();
 
   // MODULATION (2)
@@ -757,34 +778,42 @@ void CIO::ifConf2(MMDVM_STATE modemState)
   ADF7021_REG2 |= (uint32_t) (m_power & 0x3F) << 13;  // power level
   ADF7021_REG2 |= (uint32_t) 0b110001         << 7;   // PA
   AD7021_control_word = ADF7021_REG2;
+  debreg[1][2] = AD7021_control_word;
   Send_AD7021_control2();
 
   // TEST DAC (14)
   AD7021_control_word = 0x0000000E;
+  debreg[1][14] = AD7021_control_word;
   Send_AD7021_control2();
 
   // AGC (auto, defaults) (9)
   AD7021_control_word = 0x000231E9;
+  debreg[1][9] = AD7021_control_word;
   Send_AD7021_control2();
 
   // AFC (10)
   AD7021_control_word = ADF7021_REG10;
+  debreg[1][10] = AD7021_control_word;
   Send_AD7021_control2();
 
   // SYNC WORD DET (11)
   AD7021_control_word = 0x0000003B;
+  debreg[1][11] = AD7021_control_word;
   Send_AD7021_control2();
 
   // SWD/THRESHOLD (12)
   AD7021_control_word = 0x0000010C;
+  debreg[1][12] = AD7021_control_word;
   Send_AD7021_control2();
 
   // 3FSK/4FSK DEMOD (13)
   AD7021_control_word = ADF7021_REG13;
+  debreg[1][13] = AD7021_control_word;
   Send_AD7021_control2();
 
   // TEST MODE (disabled) (15)
   AD7021_control_word = 0x000E000F;
+  debreg[1][15] = AD7021_control_word;
   Send_AD7021_control2();
 }
 #endif
@@ -1097,6 +1126,7 @@ uint16_t CIO::devPOCSAG()
 
 void CIO::printConf()
 {
+	int i, j;
   DEBUG1("MMDVM_HS FW configuration:");
   DEBUG2I("TX freq (Hz):", TXfreq());
   DEBUG2I("RX freq (Hz):", RXfreq());
@@ -1107,6 +1137,14 @@ void CIO::printConf()
   DEBUG2("P25 +1 sym dev (Hz):", devP25());
   DEBUG2("NXDN +1 sym dev (Hz):", devNXDN());
   DEBUG2("POCSAG dev (Hz):", devPOCSAG());
+  DEBUG2("POCSAG dev (Hz):", devPOCSAG());
+  DEBUG2("testFMT:", 10);
+
+  for(i = 0; i < 2; i++) {
+	  for(j = 0; j < 16; j++) {
+		  DEBUG4("register:", i, j, debreg[i][j]);
+	  }
+  }
 }
 
 #endif
