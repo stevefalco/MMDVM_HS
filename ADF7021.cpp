@@ -770,7 +770,7 @@ void CIO::ifConf2(MMDVM_STATE modemState)
 
   // Frequency RX (0) and set to RX only
   AD7021_control_word = ADF7021_RX_REG0;
-  debreg[1][5] = AD7021_control_word;
+  debreg[1][0] = AD7021_control_word;
   Send_AD7021_control2();
 
   // MODULATION (2)
@@ -1181,6 +1181,53 @@ void CIO::printConf()
 		  DEBUG1(buf);
 	  }
   }
+
+  // Slow us down so we don't overrun the Pi buffer.
+  for(k = 0; k < 10000; k++) {
+	  asm volatile("nop          \n\t"
+			  "nop          \n\t"
+			  "nop          \n\t"
+		      );
+  }
+  p = buf;
+  *p++ = 'T';
+  *p++ = 'X';
+  *p++ = '=';
+  for(l = 7; l >= 0; l--) {
+	  uint8_t t = (ADF7021_TX_REG0 >> (l * 4)) & 0xf;
+	  if(t < 10) {
+		  *p++ = '0' + t;
+	  } else {
+		  *p++ = 'A' + t - 10;
+	  }
+  }
+
+  // Terminate the string and pass it to the pi.
+  *p = 0;
+  DEBUG1(buf);
+
+  for(k = 0; k < 10000; k++) {
+	  asm volatile("nop          \n\t"
+			  "nop          \n\t"
+			  "nop          \n\t"
+		      );
+  }
+  p = buf;
+  *p++ = 'T';
+  *p++ = 'X';
+  *p++ = '=';
+  for(l = 7; l >= 0; l--) {
+	  uint8_t t = (ADF7021_RX_REG0 >> (l * 4)) & 0xf;
+	  if(t < 10) {
+		  *p++ = '0' + t;
+	  } else {
+		  *p++ = 'A' + t - 10;
+	  }
+  }
+
+  // Terminate the string and pass it to the pi.
+  *p = 0;
+  DEBUG1(buf);
 }
 
 #endif
