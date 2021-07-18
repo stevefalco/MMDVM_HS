@@ -1213,7 +1213,7 @@ void CIO::printConf()
 		      );
   }
   p = buf;
-  *p++ = 'T';
+  *p++ = 'R';
   *p++ = 'X';
   *p++ = '=';
   for(l = 7; l >= 0; l--) {
